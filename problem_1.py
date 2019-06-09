@@ -1,19 +1,72 @@
 #!/usr/bin/env python3
 
 
+class CacheNode:
+
+    def __init__(self, key, value):
+        self.key = key
+        self.value = value
+        self.next = None
+        self.prev = None
+
+
 class LRU_Cache(object):
 
     def __init__(self, capacity):
-        # Initialize class variables
-        pass
+        self.capacity = capacity
+        self.hashtable = dict()
+
+        # Buffered dummy head and tail.
+        self.head = CacheNode(0, 0)
+        self.tail = CacheNode(0, 0)
+        self.head.next = self.tail
+        self.tail.prev = self.head
 
     def get(self, key):
-        # Retrieve item from provided key. Return -1 if nonexistent.
         pass
 
     def set(self, key, value):
-        # Set the value if the key is not present in the cache. If the cache is at capacity remove the oldest item.
-        pass
+        """If the key exists, changes the node's value and moves the node to the front (MRU) position in the
+        linked list. Else, creates a new node and adds it into the cache."""
+        if key in self.hashtable:
+            node = self.hashtable[key]
+            node.value = value
+            self._move_to_front(node)
+        else:
+            node = CacheNode(key, value)
+            self._add(node)
+            self.hashtable[key] = node
+
+    def _move_to_front(self, node):
+        """Move the given node to the front (MRU) position in the linked list."""
+        # Bail out if the node is already in position.
+        if node == self.head.next:
+            return
+
+        self._remove(node)
+        self._add(node)
+
+    def _remove(self, node):
+        """Removes the given node from the linked list."""
+        prev = node.prev
+        next = node.next
+
+        prev.next = next
+        next.prev = prev
+
+    def _add(self, node):
+        """Adds a node the front (MRU) position in the linked list), i.e. after the head."""
+        node.prev = self.head
+        node.next = self.head.next
+
+        self.head.next.prev = node
+        self.head.next = node
+
+    def clear(self):
+        """Empties the cache."""
+        self.hashtable.clear()
+        self.head = CacheNode(0, 0)
+        self.tail = CacheNode(0, 0)
 
 
 if __name__ == '__main__':
