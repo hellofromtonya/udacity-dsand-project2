@@ -9,9 +9,9 @@ class Test_LRU_Cache(unittest.TestCase):
     Test the LRU_Cache methods.
     """
 
-    def test_lrucache_set_new_nodes(self):
+    def test_set_should_cache_the_new_node(self):
         """
-        LRU_Cache::set() - test set with new nodes.
+        LRU_Cache::set() should cache (add) the new node.
         """
         # Set up.
         cache = LRU_Cache(5)
@@ -52,9 +52,10 @@ class Test_LRU_Cache(unittest.TestCase):
         # Clean up.
         cache.clear()
 
-    def test_lrucache_set_existing_nodes(self):
+    def test_set_should_overwrite_existing_nodes(self):
         """
-        LRU_Cache::set() - test set with existing nodes.
+        LRU_Cache::set() should overwrite existing nodes and move the node to the front (MRU) position
+        of the linked list.
         """
         # Set up.
         cache = LRU_Cache(5)
@@ -133,6 +134,63 @@ class Test_LRU_Cache(unittest.TestCase):
 
         # Clean up.
         cache.clear()
+
+    def test_get_shouild_return_neg1_when_not_cached(self):
+        """
+        LRU_Cache::get() should return -1 when the key is not cached.
+        """
+        # Set up.
+        cache = LRU_Cache(5)
+
+        self.assertEqual(-1, cache.get('does_not_exist'))
+
+    def test_get_should_return_value_and_move_node_to_front(self):
+        """
+        LRU_Cache::get() should return the value and move the node to the front (MRU) position
+        of the linked list.
+        """
+        # Set up.
+        cache = LRU_Cache(5)
+        test_data = {
+            'udacity': 1,
+            'python': 2,
+            100: 'hello world',
+            200: 'algorithms'
+        }
+        for key, value in test_data.items():
+            cache.set(key, value)
+
+        # Test -1 is returned if the key does not exist.
+        self.assertEqual(-1, cache.get('does_not_exist'))
+
+        # Test getting the value and that the node was moved to the front (MRU) position.
+        self.assertEqual('hello world', cache.get(100))
+        node = cache.head.next
+        self.assertEqual(cache.hashtable[100], node)
+        self.assertEqual('hello world', node.value)
+        self.assertEqual(100, node.key)
+
+        self.assertEqual(2, cache.get('python'))
+        node = cache.head.next
+        self.assertEqual(cache.hashtable['python'], node)
+        self.assertEqual(2, node.value)
+        self.assertEqual('python', node.key)
+
+        self.assertEqual(1, cache.get('udacity'))
+        node = cache.head.next
+        self.assertEqual(cache.hashtable['udacity'], node)
+        self.assertEqual(1, node.value)
+        self.assertEqual('udacity', node.key)
+
+        self.assertEqual('algorithms', cache.get(200))
+        node = cache.head.next
+        self.assertEqual(cache.hashtable[200], node)
+        self.assertEqual('algorithms', node.value)
+        self.assertEqual(200, node.key)
+
+        # Clean up.
+        cache.clear()
+
 
 if __name__ == '__main__':
     unittest.main()

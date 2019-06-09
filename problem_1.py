@@ -23,7 +23,14 @@ class LRU_Cache(object):
         self.tail.prev = self.head
 
     def get(self, key):
-        pass
+        """If cached, moves the node to the front (MRU) position in the linked list and then returns the value.
+                Else, returns -1."""
+        if key not in self.hashtable:
+            return -1
+
+        node = self.hashtable[key]
+        self._move_to_front(node)
+        return node.value
 
     def set(self, key, value):
         """If the key exists, changes the node's value and moves the node to the front (MRU) position in the
