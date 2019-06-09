@@ -44,6 +44,10 @@ class LRU_Cache(object):
             self._add(node)
             self.hashtable[key] = node
 
+        # If the cache is overcapacity, remove the last node.
+        if len(self.hashtable) > self.capacity:
+            self._remove_lru()
+
     def _move_to_front(self, node):
         """Move the given node to the front (MRU) position in the linked list."""
         # Bail out if the node is already in position.
@@ -60,6 +64,12 @@ class LRU_Cache(object):
 
         prev.next = next
         next.prev = prev
+
+    def _remove_lru(self):
+        """Removes the LRU node (previous to the tail) from the linked list."""
+        node = self.tail.prev
+        self._remove(node)
+        del self.hashtable[node.key]
 
     def _add(self, node):
         """Adds a node the front (MRU) position in the linked list), i.e. after the head."""

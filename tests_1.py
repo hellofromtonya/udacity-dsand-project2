@@ -191,6 +191,43 @@ class Test_LRU_Cache(unittest.TestCase):
         # Clean up.
         cache.clear()
 
+    def test_set_should_remove_lru_node_when_overcapacity(self):
+        """
+        LRU_Cache::set() should remove the LRU node when overcapacity.
+        """
+        # Set up.
+        cache = LRU_Cache(4)
+        test_data = {
+            'udacity': 1,
+            'python': 2,
+            100: 'hello world',
+            200: 'algorithms'
+        }
+        for key, value in test_data.items():
+            cache.set(key, value)
+
+        # Check the before states.
+        self.assertEqual(cache.hashtable['udacity'], cache.tail.prev)
+        self.assertEqual(len(cache.hashtable), cache.capacity)
+
+        cache.set(300, 'overcapacity')
+
+        # Test that the previous last node has been removed.
+        self.assertEqual(len(cache.hashtable), cache.capacity)
+        self.assertFalse('udacity' in cache.hashtable)
+        self.assertEqual(-1, cache.get('udacity'))
+        self.assertEqual(cache.hashtable['python'], cache.tail.prev)
+
+        # Retest each node in the linked list.
+        node = cache.head.next
+        self.assertEqual(cache.hashtable[300], node)
+        self.assertEqual(cache.hashtable[200], node.next)
+        self.assertEqual(cache.hashtable[100], node.next.next)
+        self.assertEqual(cache.hashtable['python'], node.next.next.next)
+
+        # Clean up.
+        cache.clear()
+
 
 if __name__ == '__main__':
     unittest.main()
