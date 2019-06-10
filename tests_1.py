@@ -9,6 +9,18 @@ class Test_LRU_Cache(unittest.TestCase):
     Test the LRU_Cache methods.
     """
 
+    def test_set_should_return_neg1_when_falsey_key_given(self):
+        """
+        LRU_Cache::set() should return -1 when a falsey key is given.
+        """
+        cache = LRU_Cache(5)
+        self.assertEqual(-1, cache.set('', 1))
+        self.assertEqual(-1, cache.set(None, 1))
+        self.assertEqual(-1, cache.set(False, 1))
+        self.assertEqual(-1, cache.set([], 1))
+        self.assertEqual(-1, cache.set({}, 1))
+        self.assertEqual(0, len(cache.hashtable))
+
     def test_set_should_cache_the_new_node(self):
         """
         LRU_Cache::set() should cache (add) the new node.
@@ -134,6 +146,19 @@ class Test_LRU_Cache(unittest.TestCase):
 
         # Clean up.
         cache.clear()
+
+    def test_get_should_return_neg1_when_falsey_key_given(self):
+        """
+        LRU_Cache::get() should return -1 when a falsey key is given.
+        """
+        # Set up.
+        cache = LRU_Cache(5)
+
+        self.assertEqual(-1, cache.get(''))
+        self.assertEqual(-1, cache.get(False))
+        self.assertEqual(-1, cache.get(None))
+        self.assertEqual(-1, cache.get([]))
+        self.assertEqual(-1, cache.get({}))
 
     def test_get_shouild_return_neg1_when_not_cached(self):
         """

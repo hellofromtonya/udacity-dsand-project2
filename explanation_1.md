@@ -63,9 +63,23 @@ Hashtable       Doubly Linked List
                      
 ## Design Considerations
 
-1. To reduce code complexity, a dummy head and tail node is used.  How is the complexity reduced? It eliminates checking if there's a head or tail and then setting or resetting either as needed.  This technique is a common approach.
-2. A `clear` method is provided to aid in testing.
-3. Unit tests are provided in the `tests_1.py` file.  These tests go beyond the in-file test cases as it tests the internal states, order of the nodes in the linked list, and more.
+### Dummy Head and Tail Nodes
+
+To reduce code complexity, a dummy head and tail node is used.  How is the complexity reduced? It eliminates checking if there's a head or tail and then setting or resetting either as needed.  This technique is a common approach.
+
+### Guard Clause for Falsey Key
+
+If a falsey value is given for the key, the `set()` or `get()` method bails out, returning `-1`.  This design pattern is handled via a guard clause which checks for any falsey value being passed as the `key`.
+
+To make the code more readable and understandable, checks for falsey are done by typecasting to boolean first.  I find the intent is better understood as "checking for falsey" conditions.
+
+## Reset via `clear` Method
+
+A `clear` method is provided to aid in testing.
+
+## Unit Tests
+
+Unit tests are provided in the `tests_1.py` file.  These tests go beyond the in-file test cases as it tests the internal states, order of the nodes in the linked list, and more.
 
 ## Summary
 
