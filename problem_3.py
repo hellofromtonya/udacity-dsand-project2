@@ -3,104 +3,6 @@
 import sys
 
 
-class HuffmanNode:
-    def __init__(self, freq, char):
-        self.freq = freq
-        self.char = char
-        self.left_child = None
-        self.right_child = None
-
-
-def map_frequency(data):
-    """
-    Maps the character frequencies (counts) into a dictionary (hashtable).
-
-    :param data: String to be mapped.
-    :return: dictionary with char as key and frequency as the value.
-    """
-    frequencies = dict()
-
-    if not bool(data):
-        return frequencies
-
-    for char in data:                          # O(n)
-        if char in frequencies:
-            frequencies[char] += 1
-        else:
-            frequencies[char] = 1
-
-    return frequencies
-
-
-def build_priority_queue(frequencies):
-    """
-    Builds the priority queue for the given frequencies dictionary.
-
-    :param frequencies: dictionary of character frequencies
-    :return: list (array) of a sorted priority queue
-    """
-    priority_queue = []
-    for char, freq in frequencies.items():       # O(n)
-        node = HuffmanNode(freq, char)
-        priority_queue.append((freq, node))
-
-    _sort_pq(priority_queue)
-    return priority_queue
-
-
-def _sort_pq(priority_queue):
-    """Sort is O(n log n)"""
-    priority_queue.sort(key=lambda tup: tup[0])
-
-
-def build_tree(priority_queue):
-    # The steps to build the tree are as follows:
-    #
-    # while pq.size() > 1:
-    #   1. Pop the 1st 2 nodes out of the priority queue.
-    #   2. Sum the frequencies.
-    #   3. Make a new parent node with the sum of the child frequencies.
-    #   4. Enqueue it back into the priority queue.
-    # when done, the last item in the pq is the root of the tree.
-    tree = None
-
-    while len(priority_queue) > 1:
-        left_child = priority_queue.pop(0)
-        right_child = priority_queue.pop(0)
-        parent = HuffmanNode(left_child[1].freq + right_child[1].freq, None)
-        parent.left_child = left_child[1]
-        parent.right_child = right_child[1]
-
-        priority_queue.append((parent.freq, parent))
-        _sort_pq(priority_queue)
-
-    root = priority_queue.pop()
-    return root[1]
-
-
-def map_codes(node, code='', code_mappings={}):
-    """
-    Map the codes of the Huffman Tree by recursively walking root to leaf.
-
-    :param node: Current HuffmanNode
-    :param code: The current code of 1s and 0s.
-    :param code_mappings: Dictionary of code mappings
-    :return: Dictionary of code mappings where char is the key and the code is the value.
-    """
-
-    if type(node.left_child) is HuffmanNode:
-        map_codes(node.left_child, code + '0', code_mappings)
-    else:
-        code_mappings[node.char] = code
-
-    if type(node.right_child) is HuffmanNode:
-        map_codes(node.right_child, code + '1', code_mappings)
-    else:
-        code_mappings[node.char] = code
-
-    return code_mappings
-
-
 def huffman_encoding(data):
     """
     Encodes the given string data using the Huffman Coding algorithm.
@@ -108,18 +10,20 @@ def huffman_encoding(data):
     :param data: String to be encoded.
     :return: tuple - encoded data, Huffman Tree
     """
+    if not bool(data):
+        return '', None
 
     # Step 1: Map the frequencies.
     frequencies = map_frequency(data)
 
     # Step 2: build and sort the priority queue.
-    priority_queue = build_priority_queue(frequencies)
+    priority_queue = _build_priority_queue(frequencies)
 
     # Step 3: Build the Huffman Tree.
     tree = build_tree(priority_queue)
 
     # Step 4: Map the codes from the Huffman Tree.
-    code_mappings = map_codes(tree)
+    code_mappings = map_codes(tree, '', dict())
 
     # Step 5: Encode the original data using the code mappings from the Huffman Tree.
     encoding = ''
@@ -158,6 +62,107 @@ def huffman_decoding(data, tree):
             node = tree
 
     return decoded
+
+
+class HuffmanNode:
+    def __init__(self, freq, char):
+        self.freq = freq
+        self.char = char
+        self.left_child = None
+        self.right_child = None
+
+
+def map_frequency(data):
+    """
+    Maps the character frequencies (counts) into a dictionary (hashtable).
+
+    :param data: String to be mapped.
+    :return: dictionary with char as key and frequency as the value.
+    """
+    frequencies = dict()
+
+    if not bool(data):
+        return frequencies
+
+    for char in data:                          # O(n)
+        if char in frequencies:
+            frequencies[char] += 1
+        else:
+            frequencies[char] = 1
+
+    return frequencies
+
+
+def _build_priority_queue(frequencies):
+    """
+    Builds the priority queue for the given frequencies dictionary.
+
+    :param frequencies: dictionary of character frequencies
+    :return: list (array) of a sorted priority queue
+    """
+    priority_queue = []
+    for char, freq in frequencies.items():       # O(n)
+        node = HuffmanNode(freq, char)
+        priority_queue.append((freq, node))
+
+    _sort_pq(priority_queue)
+    return priority_queue
+
+
+def _sort_pq(priority_queue):
+    """Sort is O(n log n)"""
+    priority_queue.sort(key=lambda tup: tup[0])
+
+
+def build_tree(priority_queue):
+    # The steps to build the tree are as follows:
+    #
+    # while pq.size() > 1:
+    #   1. Pop the 1st 2 nodes out of the priority queue.
+    #   2. Sum the frequencies.
+    #   3. Make a new parent node with the sum of the child frequencies.
+    #   4. Enqueue it back into the priority queue.
+    # when done, the last item in the pq is the root of the tree.
+    if len(priority_queue) == 0:
+        return
+
+    tree = None
+
+    while len(priority_queue) > 1:
+        left_child = priority_queue.pop(0)
+        right_child = priority_queue.pop(0)
+        parent = HuffmanNode(left_child[1].freq + right_child[1].freq, None)
+        parent.left_child = left_child[1]
+        parent.right_child = right_child[1]
+
+        priority_queue.append((parent.freq, parent))
+        _sort_pq(priority_queue)
+
+    root = priority_queue.pop()
+    return root[1]
+
+
+def map_codes(node, code, map):
+    """
+    Map the codes of the Huffman Tree by recursively walking root to leaf.
+
+    :param node: Current HuffmanNode
+    :param code: The current code of 1s and 0s.
+    :param map: Dictionary of code mappings
+    :return: Dictionary of code mappings where char is the key and the code is the value.
+    """
+
+    if type(node.left_child) is HuffmanNode:
+        map_codes(node.left_child, code + '0', map)
+    else:
+         map[node.char] = code
+
+    if type(node.right_child) is HuffmanNode:
+        map_codes(node.right_child, code + '1', map)
+    else:
+        map[node.char] = code
+
+    return map
 
 
 if __name__ == '__main__':
