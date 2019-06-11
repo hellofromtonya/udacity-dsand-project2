@@ -99,6 +99,25 @@ class Test_HuffmanCoding(unittest.TestCase):
             encoding, tree = huffman_encoding(data)
             self.assertEqual(test_data['encoding'], encoding)
 
+    def test_huffman_decoding_should_decode(self):
+        """
+        Test huffman_decoding() should decode the given encoded string.
+        """
+        for data, test_data in self.test_data.items():
+            encoding, tree = huffman_encoding(data)
+            self.assertEqual(data, huffman_decoding(encoding, tree))
+
+    def test_huffman_decoding_should_throw_error_when_tree_is_invalid(self):
+        """
+        Test huffman_decoding() should throw an error when no tree is given.
+        """
+        with self.assertRaises(AttributeError) as context:
+            huffman_decoding('11010011', None)
+        self.assertTrue("'NoneType' object has no attribute 'right_child'" in str(context.exception))
+
+    """
+    Helpers.
+    """
 
     def _traverse_in_level_order(self, tree):
         """Helper function to fetch the tree's order."""
