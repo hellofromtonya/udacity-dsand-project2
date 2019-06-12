@@ -91,6 +91,11 @@ def map_frequency(data):
         total += 1
 
     map = list()
+
+    # When there's only 1 character, set a dummy node to ensure we can build the tree.
+    if len(data) == 1:
+        map.append((0, None, HuffmanNode(0, None)))
+
     for char, freq in frequencies.items():
         map.append((freq, char, HuffmanNode(freq, char)))
 
@@ -157,6 +162,7 @@ def map_codes(node, code, map):
 if __name__ == '__main__':
     def run_test_cases():
         test_data = [
+            'n',
             'ab ba',
             'Huffman coding',
             'ABRACADABRA',

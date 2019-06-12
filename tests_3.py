@@ -118,6 +118,20 @@ class Test_HuffmanCoding(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.test_data = {
+            # Edge case of only 1 character.
+            'n': {
+                'frequencies': [(0, None, ), (1, 'n', )],
+                'tree_order': [
+                    (1, None),
+                    (0, None),
+                    (1, 'n')
+                ],
+                #      1
+                #  0      1
+                #        'n'
+                'map': {None: '0', 'n': '1'},
+                'encoding': '1',
+            },
             'ab ba': {
                 'frequencies': [
                     (2, 'a', ),

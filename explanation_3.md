@@ -2,6 +2,11 @@
 
 This document provides an explanation for the design decisions and implementation.
 
+## Summary
+
+1. Efficiency: worst case of O(n log n) time and a O(n) space.
+2. Data structures include: dictionary, list, and a priority queue that leverages a binary heap tree.
+
 ## Data Structures
 
 This problem uses multiple data structures for different purposes:
@@ -17,7 +22,7 @@ This problem uses multiple data structures for different purposes:
 
 ### Priority Queue
 
-My initial implementation was with a list.  However, that required a separate sorting task after building the frequencies map and then each time a parent node was appended during the tree build.  Array sort is a O(n) time complexity.
+My initial implementation was with a list.  However, that required a separate sorting task after building the frequencies map O(n log n) and then each time a parent node was appended during the tree build O(n x (n log n)). Ouch.
 
 I switched to the typical implementation with a heap.  What was the result?
 
@@ -187,10 +192,3 @@ def map_codes(node, code, map):
 ### Mapping the Codes for Encoding
 
 Before encoding begins, the tree is converted into a code map, which is a dictionary.  I chose this design to minimize repetitively walking the tree for the same character.  With the map, it's a O(1) lookup for each character. 
-
-
-## Summary
-
-1. Efficiency: worst case of O(n log n) time and a O(n) space.
-2. Data structures include: dictionary, list, Priority Queue with heap, and binary heap tree. 
-
