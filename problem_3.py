@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import sys
+from queue import PriorityQueue
 
 
 def huffman_encoding(data):
@@ -16,16 +17,13 @@ def huffman_encoding(data):
     # Step 1: Map the frequencies.
     frequencies = map_frequency(data)
 
-    # Step 2: build and sort the priority queue.
-    priority_queue = _build_priority_queue(frequencies)
+    # Step 2: Build the Huffman Tree.
+    tree = build_tree(frequencies)
 
-    # Step 3: Build the Huffman Tree.
-    tree = build_tree(priority_queue)
-
-    # Step 4: Map the codes from the Huffman Tree.
+    # Step 3: Map the codes from the Huffman Tree.
     code_mappings = map_codes(tree, '', dict())
 
-    # Step 5: Encode the original data using the code mappings from the Huffman Tree.
+    # Step 4: Encode the original data using the code mappings from the Huffman Tree.
     encoding = ''
     for char in data:
         encoding += code_mappings[char]
@@ -77,69 +75,60 @@ def map_frequency(data):
     Maps the character frequencies (counts) into a dictionary (hashtable).
 
     :param data: String to be mapped.
-    :return: dictionary with char as key and frequency as the value.
+    :return: list of tuples, e.g. (frequency, probability, character)
     """
     frequencies = dict()
 
     if not bool(data):
         return frequencies
 
-    for char in data:                          # O(n)
+    total = 0
+    for char in data:
         if char in frequencies:
             frequencies[char] += 1
         else:
             frequencies[char] = 1
+        total += 1
 
-    return frequencies
+    map = list()
+    for char, freq in frequencies.items():
+        map.append((freq, char, HuffmanNode(freq, char)))
+
+    return map
 
 
-def _build_priority_queue(frequencies):
+def build_tree(frequencies):
     """
-    Builds the priority queue for the given frequencies dictionary.
+    Builds the Huffman tree from the given frequencies list.
 
-    :param frequencies: dictionary of character frequencies
-    :return: list (array) of a sorted priority queue
+    :param frequencies: list of frequencies.
+    :return: root of the binary tree
     """
-    priority_queue = []
-    for char, freq in frequencies.items():       # O(n)
-        node = HuffmanNode(freq, char)
-        priority_queue.append((freq, node))
-
-    _sort_pq(priority_queue)
-    return priority_queue
-
-
-def _sort_pq(priority_queue):
-    """Sort is O(n log n)"""
-    priority_queue.sort(key=lambda tup: tup[0])
-
-
-def build_tree(priority_queue):
-    # The steps to build the tree are as follows:
-    #
-    # while pq.size() > 1:
-    #   1. Pop the 1st 2 nodes out of the priority queue.
-    #   2. Sum the frequencies.
-    #   3. Make a new parent node with the sum of the child frequencies.
-    #   4. Enqueue it back into the priority queue.
-    # when done, the last item in the pq is the root of the tree.
-    if len(priority_queue) == 0:
+    if len(frequencies) == 0:
         return
 
-    tree = None
+    queue = PriorityQueue()
+    for f in frequencies:
+        queue.put(f)
 
-    while len(priority_queue) > 1:
-        left_child = priority_queue.pop(0)
-        right_child = priority_queue.pop(0)
-        parent = HuffmanNode(left_child[1].freq + right_child[1].freq, None)
-        parent.left_child = left_child[1]
-        parent.right_child = right_child[1]
+    p3 = 0
+    while queue.qsize() > 1:
+        # Pop the 1st 2 entries.
+        lt_freq, lt_char, lt_node = queue.get()
+        rt_freq, rt_char, rt_node = queue.get()
 
-        priority_queue.append((parent.freq, parent))
-        _sort_pq(priority_queue)
+        # Build the parent node.
+        p_freq = lt_freq + rt_freq
+        parent = HuffmanNode(p_freq, None)
+        parent.left_child = lt_node
+        parent.right_child = rt_node
 
-    root = priority_queue.pop()
-    return root[1]
+        # str(p3) is just in case the priority queue needs to compare parent to a leaf when sorting the binary tree.
+        queue.put((p_freq, str(p3), parent))
+        p3 += 1
+
+    root = queue.get()
+    return root[2]
 
 
 def map_codes(node, code, map):
@@ -166,18 +155,25 @@ def map_codes(node, code, map):
 
 
 if __name__ == '__main__':
+    def run_test_cases():
+        test_data = [
+            'ab ba',
+            'Huffman coding',
+            'ABRACADABRA',
+            'Mississippi',
+            'Sally sells seashells down by the seashore.'
+        ]
 
-    a_great_sentence = "The bird is the word"
+        for data in test_data:
+            print("Data: {}".format(data))
+            print ("Data size: {}".format(sys.getsizeof(data)))
 
-    print ("The size of the data is: {}\n".format(sys.getsizeof(a_great_sentence)))
-    print ("The content of the data is: {}\n".format(a_great_sentence))
+            encoded_data, tree = huffman_encoding(data)
+            print("Encoded: {}".format(encoded_data))
+            print ("Encoded size: {}".format(sys.getsizeof(int(encoded_data, base=2))))
 
-    encoded_data, tree = huffman_encoding(a_great_sentence)
+            decoded_data = huffman_decoding(encoded_data, tree)
+            print("Decoded: {}\n".format(decoded_data))
+            print ("Decoded size: {}".format(sys.getsizeof(decoded_data)))
 
-    print ("The size of the encoded data is: {}\n".format(sys.getsizeof(int(encoded_data, base=2))))
-    print ("The content of the encoded data is: {}\n".format(encoded_data))
-
-    decoded_data = huffman_decoding(encoded_data, tree)
-
-    print ("The size of the decoded data is: {}\n".format(sys.getsizeof(decoded_data)))
-    print ("The content of the encoded data is: {}\n".format(decoded_data))
+    run_test_cases()
