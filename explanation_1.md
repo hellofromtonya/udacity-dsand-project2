@@ -2,6 +2,11 @@
 
 This document provides an explanation for the design decisions and implementation.
 
+## Summary
+
+1. Efficiency: worst case of O(1) time and a O(n) space.
+2. Data structures: hashtable (via dictionary) and doubly linked list
+
 ## Data Structures
 
 The design uses two data structures:
@@ -11,6 +16,7 @@ The design uses two data structures:
 | Hashtable via Python's dictionary | O(1) | O(n) |
 | Doubly linked list | O(n) | O(n) |
 
+## Design Considerations
 
 ### Why a doubly linked list?
 
@@ -61,8 +67,6 @@ Hashtable       Doubly Linked List
                      ------
 ```
                      
-## Design Considerations
-
 ### Dummy Head and Tail Nodes
 
 To reduce code complexity, a dummy head and tail node is used.  How is the complexity reduced? It eliminates checking if there's a head or tail and then setting or resetting either as needed.  This technique is a common approach.
@@ -76,14 +80,3 @@ To make the code more readable and understandable, checks for falsey are done by
 ## Reset via `clear` Method
 
 A `clear` method is provided to aid in testing.
-
-## Unit Tests
-
-Unit tests are provided in the `tests_1.py` file.  These tests go beyond the in-file test cases as it tests the internal states, order of the nodes in the linked list, and more.
-
-## Summary
-
-1. Efficiency: worst case of O(1) time and a O(n) space.
-2. Data structures: hashtable (via dictionary) and doubly linked list
-
- 

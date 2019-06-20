@@ -2,9 +2,22 @@
 
 This document provides an explanation for the design decisions and implementation.
 
+## Summary
+
+1. Efficiency: worst case of O(n) time and a O(n) space.
+2. Data structure: array, more specifically a Python list.
+
 ## Data Structures
 
 This problem uses a list data structure as the container to hold the found files.
+
+## Efficiency
+
+The time efficiency for this function is O(n), where `n` is dependent upon the number of subdirectories and files.
+
+The space efficiency in the worst case is also O(n) where all files in path match. 
+
+## Design Considerations
 
 ### Why a list and not a dictionary or set?
 
@@ -60,16 +73,3 @@ Why does it streamline?  Recall that the falsey check first converts to `bool` a
 Notice that `_find_files()` is nested within the `find_files()`.  Why?  In this design, `_find_files()` is tightly coupled to `find_files()` as it is the recursive worker.  It is intended only for its parent function and not to be reused as a helper for potentially other functions within a package.
 
 With this design, the nested function has access to the given `suffix` without having to specifically pass it with each recursive call.
-
-## Efficiency
-
-The time efficiency for this function is O(n), where `n` is dependent upon the number of subdirectories and files.
-
-The space efficiency in the worst case is also O(n) where all files in path match.
-
-## Summary
-
-1. Efficiency: worst case of O(n) time and a O(n) space.
-2. Data structure: array, more specifically a Python list.
-
- 

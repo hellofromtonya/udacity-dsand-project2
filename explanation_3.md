@@ -19,16 +19,6 @@ This problem uses multiple data structures for different purposes:
 | Tree | Binary heap tree |
 | Code map | dictionary|
 
-
-### Priority Queue
-
-My initial implementation was with a list.  However, that required a separate sorting task after building the frequencies map O(n log n) and then each time a parent node was appended during the tree build O(n x (n log n)). Ouch.
-
-I switched to the typical implementation with a heap.  What was the result?
-
-1. The frequencies map no longer needed to be sorted.  That reduced its time efficiency from O(n log n) to O(n).
-2. The tree building function still incurs a O(n log n), but only when first loading the frequencies map into it.  After that, each parent put into the queue is a O(log n) time.
-
 ## Efficiencies
 
 The overall efficiencies is O(n log n) time and O(n) space.
@@ -188,6 +178,15 @@ def map_codes(node, code, map):
 ```
 
 ## Design Considerations
+
+### Priority Queue
+
+My initial implementation was with a list.  However, that required a separate sorting task after building the frequencies map O(n log n) and then each time a parent node was appended during the tree build O(n x (n log n)). Ouch.
+
+I switched to the typical implementation with a heap.  What was the result?
+
+1. The frequencies map no longer needed to be sorted.  That reduced its time efficiency from O(n log n) to O(n).
+2. The tree building function still incurs a O(n log n), but only when first loading the frequencies map into it.  After that, each parent put into the queue is a O(log n) time.
 
 ### Mapping the Codes for Encoding
 
