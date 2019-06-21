@@ -81,7 +81,7 @@ if __name__ == '__main__':
         print()
 
     def run_test_2():
-        print('Running test 2....')
+        print('\nRunning test 2....')
         blockchain = Blockchain()
         print(blockchain)       # Should print "Blockchain is empty."
         for n in range(50):
@@ -93,5 +93,11 @@ if __name__ == '__main__':
         for block in blockchain:
             print('{}: {}'.format(block.index, block.hash)) # Should print each block's index and hash.
 
+    def run_test_3():
+        print('\nRunning test 3....')
+        blockchain = Blockchain()
+        print(blockchain)       # Should print "Blockchain is empty."
+
     run_test_1()
     run_test_2()
+    run_test_3()
