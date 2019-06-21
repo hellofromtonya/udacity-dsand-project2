@@ -1,40 +1,17 @@
 #!/usr/bin/env python3
 
-import sys
-
-
-class User:
-    def __init__(self, id):
-        self.id = id
-        self.member_of = dict()
-
-    def get_id(self):
-        return self.id
-
-    def join(self, group):
-        self.member_of[group.get_name()] = group
-
-    def get_groups(self):
-        return self.member_of
-
-    def is_member_of(self, group):
-        if type(group) is Group:
-            group = group.get_name()
-
-        return group in self.member_of
-
 
 class Group:
     def __init__(self, _name):
         self.name = _name
         self.groups = []
-        self.users = []
+        self.users = dict()
 
     def add_group(self, group):
         self.groups.append(group)
 
     def add_user(self, user):
-        self.users.append(user)
+        self.users[user] = None
 
     def get_groups(self):
         return self.groups
@@ -54,83 +31,87 @@ def is_user_in_group(user, group):
       user(str): user name/id
       group(class:Group): group to check user membership against
     """
-    user = get_user(user)
 
-    return user.is_member_of(group)
+    def _is_user_in_group(user, group, result=None):
+        """Checks if the user is in the group. If found, returns; else, recursively calls subgroups."""
+        if result is not None:
+            return result
 
+        if user in group.get_users():
+            return True
 
-def get_user(user):
-    """
-    Returns the user by the given user name or ID.
+        for subgroup in group.get_groups():
+            result = _is_user_in_group(user, subgroup)
+            if result:
+                return result
 
-    If does not exist, creates a new user and adds to the users map.
+        return False
 
-    Args:
-      user(str|class:User): user name/id or instance of User
-    """
-    if type(user) is User:
-        return user
-
-    global users
-    if user not in users:
-        users[user] = User(user)
-
-    return users[user]
-
-
-def join_group(user, group):
-    """
-    Handles the user joining the group.
-
-    Args:
-      user(str|class:User): user name/id or the instance of the user.
-      group(class:Group): group for the user to join.
-    """
-    if type(user) is not User:
-        user = get_user(user)
-
-    user.join(group)
-    group.add_user(user)
+    return _is_user_in_group(user, group)
 
 
 if __name__ == '__main__':
-    global users
-    users = dict()
+    def _create_groups(num_groups):
+        groups = []
+        for n in range(num_groups):
+            groups.append(Group('Group {}'.format(n)))
+        return groups
 
-    def print_user(user_id):
-        print('User {} in: R&D {}, DX {}, DevRel {}'.format(
-            user_id,
-            is_user_in_group(user_id, rd_group),
-            is_user_in_group(user_id, dx_eng),
-            is_user_in_group(user_id, devrel)
-        ))
+    def run_edge_case_1():
+        """Edge Case: No users."""
+        print('Running no users edge case....')
+        groups = _create_groups(3)
 
-    print("Data size: {}".format(sys.getsizeof(users)))
+        print(is_user_in_group('user1', groups[0]))     # False
+        print(is_user_in_group('user1', groups[1]))     # False
+        print(is_user_in_group('user1', groups[2]))     # False
 
-    rd_group = Group('R&D Group')
-    dx_eng = Group("DX Engineering")
-    devrel = Group("DevRel Team")
-    rd_group.add_group(dx_eng)
-    dx_eng.add_group(devrel)
+    def run_edge_case_2():
+        """Edge Case: user is the root group."""
+        print('\nRunning user in root edge case....')
+        groups = _create_groups(3)
 
-    for i in range(500):
-        user_id = 'user' + str(i)
-        join_group(user_id, devrel)
-        print_user(user_id)
+        groups[0].add_user('user1')
+        groups[1].add_group(groups[2])
+        groups[0].add_group(groups[1])
 
-    for i in range(500, 900):
-        user_id = 'user' + str(i)
-        join_group(user_id, dx_eng)
-        print_user(user_id)
+        """
+                Group 0
+                   |
+              ----------
+             |          |
+            user1    Group 1
+                        |
+                     Group 2
+        """
 
-    for i in range(900, 940):
-        user_id = 'user' + str(i)
-        join_group(user_id, dx_eng)
-        print_user(user_id)
+        print(is_user_in_group('user1', groups[0]))     # True
+        print(is_user_in_group('user1', groups[1]))     # False
+        print(is_user_in_group('user1', groups[2]))     # False
 
-    print ("\nData size: {}; len {}\n".format(sys.getsizeof(users), len(users)))
+    def run_edge_case_3():
+        """Edge Case: user is in the last subgroup."""
+        print('\nRunning user in last subgroup case....')
+        groups = _create_groups(3)
 
-    # Edge case of user not in the group
-    print_user('does_not_exist')
-    user = get_user('user_not_in_a_group')
-    print_user(user.get_id())
+        groups[2].add_user('user1')
+        groups[1].add_group(groups[2])
+        groups[0].add_group(groups[1])
+
+        """
+                Group 0
+                   |
+                Group 1
+                   |
+                Group 2
+                   |
+                 user1 
+        """
+
+        print(is_user_in_group('user1', groups[0]))     # True
+        print(is_user_in_group('user1', groups[1]))     # True
+        print(is_user_in_group('user1', groups[2]))     # True
+
+    run_edge_case_1()
+    run_edge_case_2()
+    run_edge_case_3()

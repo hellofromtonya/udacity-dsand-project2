@@ -13,114 +13,148 @@ class Test_ActiveDirectory(unittest.TestCase):
     def tearDown(self):
         p4.users = dict()
 
-    def test_group_get_name_should_return_the_name(self):
+    def test_should_return_false_when_no_users(self):
         """
-        Test Group::get_name() should return the name.
+        Test is_user_in_group() should return false when there are no users.
         """
-        group = p4.Group('Group 2')
-        self.assertEqual('Group 2', group.get_name())
+        groups = self._create_groups(3)
+        self.assertFalse(p4.is_user_in_group('user1', groups[0]))
+        self.assertFalse(p4.is_user_in_group('user1', groups[1]))
+        self.assertFalse(p4.is_user_in_group('user1', groups[2]))
 
-    def test_group_add_group_should_add_the_given_group(self):
+    def test_should_return_false_when_user_doesnt_exist(self):
         """
-        Test Group::add_group() should add the given group to the `groups` attribute.
+        Test is_user_in_group() should return false when the user doesn't exist.
         """
-        group1 = p4.Group('Group 1')
-        group2 = p4.Group('Group 2')
+        groups = self._create_groups(3)
+        groups[2].add_user('user2')
+        groups[1].add_group(groups[2])
+        groups[0].add_user('user1')
+        groups[0].add_group(groups[1])
+        self.assertFalse(p4.is_user_in_group('user3', groups[0]))
+        self.assertFalse(p4.is_user_in_group('user3', groups[1]))
+        self.assertFalse(p4.is_user_in_group('user3', groups[2]))
 
-        self.assertEqual(0, len(group1.groups))
-        group1.add_group(group2)
-        self.assertEqual(1, len(group1.groups))
-        self.assertEqual(group2, group1.groups[0])
-
-    def test_get_user_should_create_and_return_user(self):
+    def test_should_find_user_in_root(self):
         """
-        Test get_user() should create and return the user.
+        Test is_user_in_group() should find the user in the root.
+
+                Group 0
+                   |
+              ----------
+             |          |
+            user1    Group 1
+                        |
+                     Group 2
         """
-        user_id = 'user1'
-        self.assertFalse(user_id in p4.users)
-        user = p4.get_user(user_id)
-        self.assertEqual(user_id, user.get_id())
-        self.assertTrue(user_id in p4.users)
+        groups = self._create_groups(3)
+        groups[0].add_user('user1')
+        groups[1].add_group(groups[2])
+        groups[0].add_group(groups[1])
+        groups[0].add_group(groups[1])
 
-    def test_get_user_should_return_existing_user(self):
+        self.assertTrue(p4.is_user_in_group('user1', groups[0]))
+        self.assertFalse(p4.is_user_in_group('user1', groups[1]))
+        self.assertFalse(p4.is_user_in_group('user1', groups[2]))
+
+    def test_should_find_user_in_last_subgroup(self):
         """
-        Test get_user() should return existing user.
+        Test is_user_in_group() should find the user in last subgroup.
+
+                Group 0
+                   |
+                Group 1
+                   |
+                Group 2
+                   |
+                 user1
         """
-        user_id = 'user1'
-        p4.users[user_id] = p4.User(user_id)
-        self.assertEqual(p4.users[user_id], p4.get_user(user_id))
+        groups = self._create_groups(3)
+        groups[0].add_user('user1')
+        groups[2].add_user('user1')
+        groups[1].add_group(groups[2])
+        groups[0].add_group(groups[1])
 
-    def test_user_join_should_add_group_to_member_of(self):
+        self.assertTrue(p4.is_user_in_group('user1', groups[0]))
+        self.assertTrue(p4.is_user_in_group('user1', groups[1]))
+        self.assertTrue(p4.is_user_in_group('user1', groups[2]))
+
+    def test_should_find_user_in_hierarchy(self):
         """
-        Test User::join() should add the given group to the `member_of` attribute.
+        Test is_user_in_group() should find the user in hierarchy.
+
+                Group 0
+                   |
+           --------------------
+          |        |           |
+        user1   Group 1     Group 2
+                   |           |
+                 user2     --------
+                          |        |
+                        user3   Group 3
+                                   |
+                               --------
+                              |        |
+                            user4   Group 4
+                                       |
+                                   ---------
+                                  |         |
+                                user5     user6
         """
-        group = p4.Group('Group 2')
-        user = p4.User('user2')
+        groups = self._create_groups(5)
+        groups[4].add_user('user5')
+        groups[4].add_user('user6')
+        groups[3].add_user('user4')
+        groups[3].add_group(groups[4])
+        groups[2].add_user('user3')
+        groups[2].add_group(groups[3])
+        groups[1].add_user('user2')
+        groups[0].add_user('user1')
+        groups[0].add_group(groups[1])
+        groups[0].add_group(groups[2])
 
-        self.assertFalse(user.member_of)
-        user.join(group)
-        self.assertEqual(1, len(user.member_of.keys()))
-        self.assertTrue('Group 2' in user.member_of)
-        self.assertEqual(group, user.member_of['Group 2'])
+        self.assertTrue(p4.is_user_in_group('user1', groups[0]))
+        self.assertFalse(p4.is_user_in_group('user1', groups[1]))
+        self.assertFalse(p4.is_user_in_group('user1', groups[2]))
+        self.assertFalse(p4.is_user_in_group('user1', groups[3]))
+        self.assertFalse(p4.is_user_in_group('user1', groups[4]))
 
-    def test_user_is_member_of_should_return_if_user_has_joined_given_group(self):
-        """
-        Test User::is_member_of() should check if the user is a member of the given group.
-        """
-        group1 = p4.Group('Group 1')
-        group2 = p4.Group('Group 2')
-        group3 = p4.Group('Group 3')
+        self.assertTrue(p4.is_user_in_group('user2', groups[0]))
+        self.assertTrue(p4.is_user_in_group('user2', groups[1]))
+        self.assertFalse(p4.is_user_in_group('user2', groups[2]))
+        self.assertFalse(p4.is_user_in_group('user2', groups[3]))
+        self.assertFalse(p4.is_user_in_group('user2', groups[4]))
 
-        user = p4.User('user1')
-        user.join(group1)
-        user.join(group2)
+        self.assertTrue(p4.is_user_in_group('user3', groups[0]))
+        self.assertFalse(p4.is_user_in_group('user3', groups[1]))
+        self.assertTrue(p4.is_user_in_group('user3', groups[2]))
+        self.assertFalse(p4.is_user_in_group('user3', groups[3]))
+        self.assertFalse(p4.is_user_in_group('user3', groups[4]))
 
-        # Test with the object.
-        self.assertTrue(user.is_member_of(group1))
-        self.assertTrue(user.is_member_of(group2))
-        self.assertFalse(user.is_member_of(group3))
+        self.assertTrue(p4.is_user_in_group('user4', groups[0]))
+        self.assertFalse(p4.is_user_in_group('user4', groups[1]))
+        self.assertTrue(p4.is_user_in_group('user4', groups[2]))
+        self.assertTrue(p4.is_user_in_group('user4', groups[3]))
+        self.assertFalse(p4.is_user_in_group('user4', groups[4]))
 
-        # Test with the group name.
-        self.assertTrue(user.is_member_of('Group 1'))
-        self.assertTrue(user.is_member_of('Group 2'))
-        self.assertFalse(user.is_member_of('Group 3'))
+        self.assertTrue(p4.is_user_in_group('user5', groups[0]))
+        self.assertFalse(p4.is_user_in_group('user5', groups[1]))
+        self.assertTrue(p4.is_user_in_group('user5', groups[2]))
+        self.assertTrue(p4.is_user_in_group('user5', groups[3]))
+        self.assertTrue(p4.is_user_in_group('user5', groups[4]))
 
-        # Check with different hierarchies of groups within groups.
-        group2.add_group(group3)
-        group1.add_group(group2)
-        self.assertTrue(user.is_member_of(group1))
-        self.assertTrue(user.is_member_of(group2))
-        self.assertFalse(user.is_member_of(group3))
+        self.assertTrue(p4.is_user_in_group('user6', groups[0]))
+        self.assertFalse(p4.is_user_in_group('user6', groups[1]))
+        self.assertTrue(p4.is_user_in_group('user6', groups[2]))
+        self.assertTrue(p4.is_user_in_group('user6', groups[3]))
+        self.assertTrue(p4.is_user_in_group('user6', groups[4]))
 
-    def test_join_group_should_make_user_member_of_group(self):
-        """
-        Test join_group() should make the user a member of the group.
-        """
-        group1 = p4.Group('Group 1')
-        user_id = 'user1'
-        p4.join_group(user_id, group1)
-
-        self.assertEqual(p4.users[user_id], p4.get_user(user_id))
-        self.assertEqual(p4.users[user_id], p4.get_user(user_id))
-        self.assertTrue(user_id in p4.users)
-        self.assertListEqual([p4.users[user_id]], group1.users)
-        self.assertListEqual([p4.users[user_id]], group1.get_users())
-
-    def test_is_user_in_group_should_check_if_user_member_of_group(self):
-        """
-        Test is_user_in_group() should check if the user is a member of the group.
-        """
-        group1 = p4.Group('Group 1')
-        user = 'user1'
-
-        # Test when the user is not a member of the group.
-        self.assertFalse(p4.is_user_in_group(user, group1))
-        self.assertFalse(p4.is_user_in_group(p4.users[user], group1))
-
-        # Test when the user is a member of the group.
-        p4.join_group(user, group1)
-        self.assertTrue(p4.is_user_in_group(user, group1))
-        self.assertTrue(p4.is_user_in_group(p4.users[user], group1))
+    def _create_groups(self, num_groups):
+        """Returns a list of groups."""
+        groups = []
+        for n in range(num_groups):
+            groups.append(p4.Group('Group {}'.format(n)))
+        return groups
 
 
 if __name__ == '__main__':
