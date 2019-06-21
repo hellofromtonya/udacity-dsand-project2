@@ -4,7 +4,7 @@ This document provides an explanation for the design decisions and implementatio
 
 ## Summary
 
-1. Efficiency: worst case of O(n) time and a O(n) space.
+1. Efficiency: worst case of O(d + f) time and a O(n) space.
 2. Data structure: array, more specifically a Python list.
 
 ## Data Structures
@@ -13,9 +13,72 @@ This problem uses a list data structure as the container to hold the found files
 
 ## Efficiency
 
-The time efficiency for this function is O(n), where `n` is dependent upon the number of subdirectories and files.
+The space efficiency in the worst case is also O(n) where all files in path match.
 
-The space efficiency in the worst case is also O(n) where all files in path match. 
+### Time Efficiency
+
+Let `d` represent the number of directories:
+    * root directory + all subdirectories
+    * represents the number of times `_find_files()` is invoked
+
+Let `f` represent the files within each directory:
+    * represents the total number of files within the given filesystem path
+
+Our time complexity then is a sum of `d` and `f` which is expressed as O(d + f).
+
+Let's visualize it using the given test directory for this problem:
+
+```
+_find_files('testdir') f = 2
+      |  
+      |-  _find_files('subdir1') f = 2
+      |     
+      |-  _find_files('subdir2') f = 1
+      |  
+      |-  _find_files('subdir3') f = 0
+      |         |  
+      |          -  _find_files('subsubdir1') f = 2
+      |     
+      |-  _find_files('subdir4') f = 1 
+      |     
+       -  _find_files('subdir5') f = 2        
+``` 
+
+The total number of entries for the test directory is 17 which is comprised of:
+    * d = 7
+    * f = 10
+
+For the given known test directory, the time complexity is O(7 + 10) = O(10).
+
+For an unknown test directory, we compute the time complexity as O(d + f):
+
+    O(total number of directories + the total number of files)
+
+
+#### Analyzing the code
+   
+
+```python
+def find_files(suffix, path):
+    if not bool(path):                                  # O(1)
+        return []
+
+    if not bool(suffix):                                # O(1)
+        suffix = None
+
+    def _find_files(path, files):
+        for entry in os.listdir(path):                  # O(e) where e is the number of entries in the path.
+            fullpath = os.path.join(path, entry)            # O(1)
+            if os.path.isdir(fullpath):                     # O(1)
+                files = _find_files(fullpath, files)        # O(e), where e is the number of entries in this new path.   
+
+            elif os.path.isfile(fullpath) and (suffix is None or entry.endswith(suffix)):   # O(1)
+                files.append(fullpath)                                                      # O(1)
+
+        return files
+
+    return _find_files(path, [])    # O(d + f)
+```
 
 ## Design Considerations
 
