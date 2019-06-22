@@ -51,7 +51,7 @@ The total number of entries for the test directory is 17 which is comprised of:
 * d = 7
 * f = 10
 
-For the given known test directory, the time complexity is O(7 + 10) = O(10).
+For the given known test directory, the time complexity is O(7 + 10) = O(17).
 
 For an unknown test directory, we compute the time complexity as O(d + f):
 
