@@ -92,8 +92,8 @@ def map_frequency(data):
 
     map = list()
 
-    # When there's only 1 character, set a dummy node to ensure we can build the tree.
-    if len(data) == 1:
+    # When there's a single character, set a dummy node to ensure we can build the tree.
+    if len(frequencies) == 1:
         map.append((0, None, HuffmanNode(0, None)))
 
     for char, freq in frequencies.items():
@@ -160,10 +160,44 @@ def map_codes(node, code, map):
 
 
 if __name__ == '__main__':
+
+    def run_edge_case_no_data():
+        print('Running no data given edge case...')
+        test_data = [
+            '',
+            None,
+            False,
+            {},
+        ]
+        for data in test_data:
+            print(huffman_encoding(data))    # ('', None)
+
+    def run_edge_case_repeating_char():
+        print('\nRunning single repeating character edge case...')
+        test_data = [
+            'aaaaaa',
+            'bbbbbb',
+            '1111111',
+        ]
+
+        for data in test_data:
+            print("Data: {}".format(data))
+            print ("Data size: {}".format(sys.getsizeof(data)))
+
+            encoded_data, tree = huffman_encoding(data)
+            print("Encoded: {}".format(encoded_data))
+            print ("Encoded size: {}".format(sys.getsizeof(int(encoded_data, base=2))))
+
+            decoded_data = huffman_decoding(encoded_data, tree)
+            print("Decoded: {}\n".format(decoded_data))
+            print ("Decoded size: {}".format(sys.getsizeof(decoded_data)))
+
     def run_test_cases():
+        print('\nRunning multiple strings...')
         test_data = [
             'n',
             'ab ba',
+            'abc123'
             'Huffman coding',
             'ABRACADABRA',
             'Mississippi',
@@ -182,4 +216,6 @@ if __name__ == '__main__':
             print("Decoded: {}\n".format(decoded_data))
             print ("Decoded size: {}".format(sys.getsizeof(decoded_data)))
 
+    run_edge_case_no_data()
+    run_edge_case_repeating_char()
     run_test_cases()

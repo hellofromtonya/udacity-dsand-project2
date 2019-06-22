@@ -70,6 +70,22 @@ class Test_HuffmanCoding(unittest.TestCase):
         self.assertTupleEqual(expected, huffman_encoding(False))
         self.assertTupleEqual(expected, huffman_encoding({}))
 
+    def test_huffman_encoding_should_encode_repeating_char(self):
+        """
+        Test huffman_encoding() should encode a string with one repeating character.
+        """
+        data = 'aaaaaa'
+        encoding, tree = huffman_encoding(data)
+        self.assertEqual('111111', encoding)
+
+        data = 'bbbbbb'
+        encoding, tree = huffman_encoding(data)
+        self.assertEqual('111111', encoding)
+
+        data = '1111111'
+        encoding, tree = huffman_encoding(data)
+        self.assertEqual('1111111', encoding)
+
     def test_huffman_encoding_should_encode_given_data(self):
         """
         Test huffman_encoding() should encode the given data.
@@ -131,6 +147,20 @@ class Test_HuffmanCoding(unittest.TestCase):
                 #        'n'
                 'map': {None: '0', 'n': '1'},
                 'encoding': '1',
+            },
+            # Edge case of 1 repeating character.
+            'aaaaaaa': {
+                'frequencies': [(0, None,), (7, 'a',)],
+                'tree_order': [
+                    (7, None),
+                    (0, None),
+                    (7, 'a')
+                ],
+                #      1
+                #  0      7
+                #        'a'
+                'map': {None: '0', 'a': '1'},
+                'encoding': '1111111',
             },
             'ab ba': {
                 'frequencies': [
