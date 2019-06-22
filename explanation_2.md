@@ -18,11 +18,13 @@ The space efficiency in the worst case is also O(n) where all files in path matc
 ### Time Efficiency
 
 Let `d` represent the number of directories:
-    * root directory + all subdirectories
-    * represents the number of times `_find_files()` is invoked
+
+* root directory + all subdirectories
+* represents the number of times `_find_files()` is invoked
 
 Let `f` represent the files within each directory:
-    * represents the total number of files within the given filesystem path
+
+* represents the total number of files within the given filesystem path
 
 Our time complexity then is a sum of `d` and `f` which is expressed as O(d + f).
 
@@ -45,8 +47,9 @@ _find_files('testdir') f = 2
 ``` 
 
 The total number of entries for the test directory is 17 which is comprised of:
-    * d = 7
-    * f = 10
+
+* d = 7
+* f = 10
 
 For the given known test directory, the time complexity is O(7 + 10) = O(10).
 
