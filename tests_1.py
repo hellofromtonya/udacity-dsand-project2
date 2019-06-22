@@ -9,6 +9,22 @@ class Test_LRU_Cache(unittest.TestCase):
     Test the LRU_Cache methods.
     """
 
+    def test_set_should_return_neg1_when_0_capacity(self):
+        """
+        LRU_Cache::set() should return -1 and not set the value when the cache's capacity is 0.
+        """
+        cache = LRU_Cache(0)
+        self.assertEqual(-1, cache.set(1, 1))
+        self.assertEqual(0, len(cache.hashtable))
+
+    def test_get_should_return_neg1_when_0_capacity(self):
+        """
+        LRU_Cache::get() should return -1 when the cache's capacity is 0.
+        """
+        cache = LRU_Cache(0)
+        cache.set(1, 1)
+        self.assertEqual(-1, cache.get(1))
+
     def test_set_should_return_neg1_when_falsey_key_given(self):
         """
         LRU_Cache::set() should return -1 when a falsey key is given.
